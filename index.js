@@ -1,3 +1,23 @@
+const http = require("http");
+
+const server = http.createServer((req, res) => {
+  res.setHeader("Content-Type", "text/html");
+  res.end(`
+    <html>
+      <head>
+        <title>Yokajinn's View</title>
+      </head>
+      <body style="margin: 0; padding: 0;">
+        <iframe width="100%" height="100%" src="https://stock.adobe.com/search?k=%22y+logo%22" frameborder="0" allowfullscreen></iframe>
+      </body>
+    </html>`);
+});
+
+server.listen(3000, () => {
+  console.log("Server Online ✅!!");
+});
+
+
 const Discord = require("discord.js");
 require("dotenv").config();
 const client = new Discord.Client({ intents: ["Guilds", "GuildMessages"] });
