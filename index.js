@@ -20,7 +20,6 @@ server.listen(3000, () => {
 const Discord = require("discord.js");
 require("dotenv").config();
 const client = new Discord.Client({ intents: ["Guilds", "GuildMessages"] });
-const token = process.env.TOKEN;
 
 client.on("ready", () => {
   console.log(`✅ Logged in as ${client.user.tag}!`);
