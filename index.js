@@ -17,13 +17,9 @@ server.listen(3000, () => {
   console.log("Server Online ✅!!");
 });
 
-
 const Discord = require("discord.js");
 require("dotenv").config();
 const client = new Discord.Client({ intents: ["Guilds", "GuildMessages"] });
-const { slashRegister } = require("./Functions/slash-deployer");
-const { messageChecker } = require("./Functions/Message-Checker");
-const { Specifier } = require("./Functions/Specifier");
 const token = process.env.TOKEN;
 
 client.on("ready", () => {
@@ -32,6 +28,114 @@ client.on("ready", () => {
   messageChecker(client); // Start messageChecker
   console.log(" ✅ Bot is online");
 });
+
+const fs = require("fs").promises;
+
+const messageChecker = async (client) => {
+  try {
+    client.on("messageCreate", async (message) => {
+      // Check if the message is in the restricted channel
+      if (
+        message.channel.id === "1231636920962908291" ||
+        message.channel.id === "1248718533714645002" ||
+        message.channel.id === "1248682732662554674"
+      ) {
+        // Check if the message author is not the bot itself
+        if (!message.author.bot) {
+          // Check if the message doesn't start with a slash command
+          if (!message.content.startsWith("/")) {
+            // Load or initialize the user data
+            let userData = {};
+            try {
+              const data = await fs.readFile("userData.json");
+              userData = JSON.parse(data);
+            } catch (err) {
+              console.error("Error loading user data:", err);
+            }
+
+            const userId = message.author.id;
+            const currentTime = Date.now();
+            const lastSentTime = userData[userId] || 0;
+            const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
+
+            // Check if more than a day has passed since the last disclaimer message was sent to this user
+            if (currentTime - lastSentTime > oneDay) {
+              try {
+                // Send disclaimer message to the user
+                await message.author.send({
+                  content: `**__@${message.author.username}__**, you can't send messages in that channel. Your message has been removed. **This channel is only dedicated to commands.**`,
+                });
+
+                // Update last sent time for this user
+                userData[userId] = currentTime;
+                await fs.writeFile("userData.json", JSON.stringify(userData));
+              } catch (error) {
+                console.error("Error sending message:", error);
+              }
+            }
+
+            // Delete the message
+            try {
+              await message.delete();
+              console.log("Message deleted:", message.content);
+            } catch (error) {
+              console.error("Error deleting message:", error);
+            }
+          }
+        }
+      }
+    });
+    console.log(" ✅ Message checker registered successfully!");
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+module.exports = { messageChecker };
+
+const { REST, Routes, SlashCommandBuilder } = require("discord.js");
+require("dotenv").config();
+
+// Information needed for slash command
+const botID = "1231643907268546723";
+const serverID = "1231634195382534255";
+const botToken = process.env.TOKEN;
+
+const rest = new REST({ version: "9" }).setToken(botToken);
+
+const slashRegister = async () => {
+  try {
+    await rest.put(Routes.applicationGuildCommands(botID, serverID), {
+      body: [
+        new SlashCommandBuilder()
+          .setName("roll-cost")
+          .setDescription("Calculate the cost to roll the fruit")
+          .addBooleanOption((option) => {
+            return option
+              .setName("premium")
+              .setDescription("Are you premium in roblox?")
+              .setRequired(true);
+          })
+          .addIntegerOption((option) => {
+            return option
+              .setName("level")
+              .setDescription(
+                "The level for which you want to calculate the roll cost",
+              )
+              .setRequired(true);
+          }),
+        new SlashCommandBuilder()
+          .setName("roll-fruit")
+          .setDescription("Try your luck rolling fruit"),
+      ],
+    });
+    console.log(" ✅ Slash commands registered successfully!");
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+module.exports = { slashRegister };
 
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return; // Check if the interaction is a command
