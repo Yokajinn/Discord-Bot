@@ -20,6 +20,7 @@ client.on("interactionCreate", async (interaction) => {
 
   if (command === "roll-fruit") {
     //roll fruit command
+    //This command is rng fruit roll command
 
     const fruitProbabilities = [
       { name: "Rocket", probability: 13 },
@@ -249,6 +250,7 @@ client.on("interactionCreate", async (interaction) => {
     await interaction.reply(`You rolled **${fruit}** ${emoji} `);
   } else if (command === "roll-cost") {
     // roll cost command
+    // calculate cost for roll based on the level
     const options = interaction.options;
     const isPremium = options.getBoolean("premium");
     const level = options.getInteger("level");
